@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import Header from './components/Header'
+import HomePage from './components/HomePage'
+import AboutPage from './components/AboutPage'
 import ResearchDashboard from './components/ResearchDashboard'
 import HumanFeedback from './components/HumanFeedback'
 import AgentStatus from './components/AgentStatus'
@@ -9,6 +12,7 @@ import { FileText, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 import './App.css'
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('home')
   const [sessionId, setSessionId] = useState(null)
   const [researchTopic, setResearchTopic] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -20,6 +24,17 @@ function App() {
   const [draftContent, setDraftContent] = useState(null)
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
+  const handleNavigation = (page) => {
+    setCurrentPage(page)
+    if (page === 'research' && !sessionId) {
+      // Ready to start new research
+    }
+  }
+
+  const handleStartResearch = () => {
+    setCurrentPage('research')
+  }
 
   const startResearch = async () => {
     if (!researchTopic.trim()) {
@@ -140,46 +155,55 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>
-          <FileText size={32} />
-          Multi-Agent Research System
-        </h1>
-        <p>Powered by 6 Specialized AI Agents + Human-in-the-Loop</p>
-      </header>
+      <Header currentPage={currentPage} onNavigate={handleNavigation} />
 
       <main className="app-main">
-        {!sessionId && (
-          <div className="research-form">
-            <h2>Start New Research</h2>
-            <textarea
-              placeholder="Enter your research topic... (e.g., 'Latest advancements in quantum computing 2024')"
-              value={researchTopic}
-              onChange={(e) => setResearchTopic(e.target.value)}
-              rows={4}
-            />
-            <button onClick={startResearch} disabled={isLoading}>
-              {isLoading ? 'Starting Research...' : 'Start Research'}
-            </button>
-          </div>
+        {currentPage === 'home' && (
+          <HomePage onStartResearch={handleStartResearch} />
         )}
 
-        {sessionId && (
-          <>
-            <AgentStatus status={status} currentStage={status?.stage} />
+        {currentPage === 'about' && (
+          <AboutPage />
+        )}
 
-            {needsFeedback && (
-              <HumanFeedback
-                onSubmit={submitFeedback}
-                stage={feedbackStage}
-                draftContent={draftContent}
-              />
+        {currentPage === 'research' && (
+          <>
+            {!sessionId && (
+              <div className="research-form">
+                <h2>Start New Research</h2>
+                <p className="research-subtitle">
+                  Enter your research topic and let our 6 AI agents do the work
+                </p>
+                <textarea
+                  placeholder="Enter your research topic... (e.g., 'Latest advancements in quantum computing 2024')"
+                  value={researchTopic}
+                  onChange={(e) => setResearchTopic(e.target.value)}
+                  rows={4}
+                />
+                <button className="start-btn" onClick={startResearch} disabled={isLoading}>
+                  {isLoading ? 'Starting Research...' : 'Start Research'}
+                </button>
+              </div>
             )}
 
-            {report && (
+            {sessionId && (
               <>
-                <ReportViewer report={report} />
-                <ExportOptions report={report} />
+                <AgentStatus status={status} currentStage={status?.stage} />
+
+                {needsFeedback && (
+                  <HumanFeedback
+                    onSubmit={submitFeedback}
+                    stage={feedbackStage}
+                    draftContent={draftContent}
+                  />
+                )}
+
+                {report && (
+                  <>
+                    <ReportViewer report={report} />
+                    <ExportOptions report={report} />
+                  </>
+                )}
               </>
             )}
           </>
