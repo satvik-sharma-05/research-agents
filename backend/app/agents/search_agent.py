@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 import os
 from app.tools.web_tools import web_search, academic_search, news_search
 
@@ -30,12 +30,13 @@ Please provide:
 Be thorough but efficient. Aim for 3-5 high-quality sources per search."""
         )
         
-        self.chain = LLMChain(llm=self.llm, prompt=self.prompt)
+        # Modern LCEL chain
+        self.chain = self.prompt | self.llm | StrOutputParser()
     
     async def search(self, query: str, search_depth: str = "standard") -> dict:
         """Execute search with specified depth"""
         try:
-            # Get search strategy from LLM
+            # Get search strategy from LLM using modern LCEL
             strategy = await self.chain.ainvoke({
                 "query": query,
                 "search_depth": search_depth
@@ -47,7 +48,7 @@ Be thorough but efficient. Aim for 3-5 high-quality sources per search."""
             news_results = news_search.invoke(query)
             
             combined_results = f"""
-Search Strategy: {strategy['text']}
+Search Strategy: {strategy}
 
 === WEB SEARCH RESULTS ===
 {web_results}

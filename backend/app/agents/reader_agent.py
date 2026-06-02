@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 import os
 import re
 from app.tools.web_tools import scrape_url
@@ -33,7 +33,8 @@ Provide:
 Be thorough but concise."""
         )
         
-        self.chain = LLMChain(llm=self.llm, prompt=self.synthesis_prompt)
+        # Modern LCEL chain
+        self.chain = self.synthesis_prompt | self.llm | StrOutputParser()
     
     async def read(self, search_results: dict) -> str:
         """Extract and read content from search results"""
@@ -68,7 +69,7 @@ Be thorough but concise."""
             
             return f"""
 === SYNTHESIZED CONTENT ===
-{synthesis['text']}
+{synthesis}
 
 === RAW CONTENT ===
 {combined_content[:3000]}

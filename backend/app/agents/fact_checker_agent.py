@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 import os
 from app.tools.web_tools import verify_claim, cross_reference
 
@@ -36,7 +36,8 @@ Please provide a comprehensive fact-check report with:
 Format your response clearly with headers."""
         )
         
-        self.chain = LLMChain(llm=self.llm, prompt=self.fact_check_prompt)
+        # Modern LCEL chain
+        self.chain = self.fact_check_prompt | self.llm | StrOutputParser()
     
     async def fact_check(self, content: str) -> dict:
         """Perform fact-checking on provided content"""
@@ -66,8 +67,8 @@ Format your response clearly with headers."""
             
             return {
                 "success": True,
-                "verification_report": report['text'],
-                "confidence_score": self._extract_confidence(report['text'])
+                "verification_report": report,
+                "confidence_score": self._extract_confidence(report)
             }
         except Exception as e:
             print(f"Fact-check error: {e}")

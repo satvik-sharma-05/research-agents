@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
-from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 import os
 
 class SummarizerAgent:
@@ -35,14 +35,15 @@ Content to summarize:
 Provide a clear, well-structured summary that captures all essential information."""
         )
         
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Modern LCEL chain
+        chain = prompt | self.llm | StrOutputParser()
         
         try:
             summary = await chain.ainvoke({
                 "instructions": self.summary_levels[level],
                 "content": content[:8000]  # Limit content length
             })
-            return {"success": True, "summary": summary['text'], "level": level}
+            return {"success": True, "summary": summary, "level": level}
         except Exception as e:
             return {"success": False, "error": str(e)}
     

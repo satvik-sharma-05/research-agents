@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 import os
 import json
 
@@ -73,7 +73,8 @@ Provide:
 Format your response clearly with scores first, then detailed feedback.""")
         ])
         
-        self.critic_chain = LLMChain(llm=self.llm, prompt=self.review_prompt)
+        # Modern LCEL chain
+        self.critic_chain = self.review_prompt | self.llm | StrOutputParser()
     
     async def review(self, report: str) -> dict:
         """Review report and return structured feedback"""
@@ -82,8 +83,8 @@ Format your response clearly with scores first, then detailed feedback.""")
             
             # Parse feedback into structured format
             return {
-                "feedback": feedback_text['text'],
-                "scores": self._extract_scores(feedback_text['text'])
+                "feedback": feedback_text,
+                "scores": self._extract_scores(feedback_text)
             }
         except Exception as e:
             return {"feedback": f"Review error: {str(e)}", "scores": {}}

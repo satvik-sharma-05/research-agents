@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 import os
 
 class WriterAgent:
@@ -157,8 +157,9 @@ Please provide an improved version that:
 5. Ensures all sections are complete and well-developed""")
         ])
         
-        self.writer_chain = LLMChain(llm=self.llm, prompt=self.write_prompt)
-        self.revise_chain = LLMChain(llm=self.llm, prompt=self.revise_prompt)
+        # Modern LCEL chains
+        self.writer_chain = self.write_prompt | self.llm | StrOutputParser()
+        self.revise_chain = self.revise_prompt | self.llm | StrOutputParser()
     
     async def write(self, topic: str, research_data: str) -> str:
         """Generate initial report from research data"""
@@ -167,7 +168,7 @@ Please provide an improved version that:
                 "topic": topic,
                 "research_data": research_data[:10000]  # Limit length
             })
-            return report['text']
+            return report
         except Exception as e:
             return f"Error generating report: {str(e)}"
     
@@ -179,6 +180,6 @@ Please provide an improved version that:
                 "original_report": original_report,
                 "feedback": feedback_text
             })
-            return revised['text']
+            return revised
         except Exception as e:
             return original_report  # Return original if revision fails
