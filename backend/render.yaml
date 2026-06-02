@@ -1,15 +1,13 @@
 services:
   - type: web
     name: multi-agent-research-backend
-    env: python
-    region: oregon
-    plan: free
     runtime: python
+    plan: free
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: 3.14.3
       - key: OPENROUTER_API_KEY
         sync: false
       - key: TAVILY_API_KEY
