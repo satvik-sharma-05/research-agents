@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain.chains.llm import LLMChain
 import os
 import re
 from app.tools.web_tools import scrape_url
