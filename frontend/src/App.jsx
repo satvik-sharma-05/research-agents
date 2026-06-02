@@ -63,7 +63,10 @@ function App() {
   }
 
   const connectWebSocket = (id) => {
-    const websocket = new WebSocket(`ws://localhost:8000/ws/${id}`)
+    // Use wss:// for production (https) and ws:// for local development
+    const wsProtocol = API_BASE.startsWith('https') ? 'wss://' : 'ws://'
+    const wsHost = API_BASE.replace('https://', '').replace('http://', '').replace('/api', '')
+    const websocket = new WebSocket(`${wsProtocol}${wsHost}/ws/${id}`)
 
     websocket.onopen = () => {
       console.log('WebSocket connected')
