@@ -9,7 +9,7 @@ class FactCheckerAgent:
     
     def __init__(self):
         self.llm = ChatOpenAI(
-            model="meta-llama/llama-3-8b-instruct",
+            model="openrouter/free",
             api_key=os.getenv("OPENROUTER_API_KEY"),
             base_url="https://openrouter.ai/api/v1",
             temperature=0.1  # Lower temperature for more factual responses
